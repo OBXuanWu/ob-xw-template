@@ -1,18 +1,45 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <ObPlayer class="depth" ref="depth" style="width: 400px;height: 400px"/>
+  <ObPlayer class="ir" ref="ir" style="width: 400px;height: 400px"/>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
+import { inject, onMounted, ref } from 'vue';
+import { FrameFormat, RESERVE_EVENT } from 'ob-xw-common'
+export default{
 
-@Options({
-  components: {
-    HelloWorld,
+  components:{
+    // ObPlayer
   },
-})
-export default class App extends Vue {}
+  setup(){
+
+    const depth = ref(null)
+    const ir = ref(null)
+
+    onMounted( () => {
+
+      const client: any = inject('client')
+      
+      client.setDataCallback(RESERVE_EVENT.DEPTH, (buffer: any, length: any, width: any, height: any) => {
+        if(depth.value != undefined){
+          (depth.value as any).render(width, height, buffer, FrameFormat.U8)
+        }
+      })
+
+
+      client.setDataCallback(RESERVE_EVENT.IR, (buffer: any, length: any, width: any, height: any) => {
+        if(ir.value != undefined){
+          (ir.value as any).render(width, height, buffer, FrameFormat.U8)
+        }
+      })
+
+    })
+
+    return { depth, ir }
+    
+  }
+
+}
 </script>
 
 <style>
